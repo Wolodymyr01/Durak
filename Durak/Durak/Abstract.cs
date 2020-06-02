@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Windows.Forms;
+using System.Drawing;
 
 namespace Durak
 {
@@ -18,5 +20,17 @@ namespace Durak
             var x = RandomNumber(0, 100);
             return (x < procentYes) ? true : false;
         }
+    }
+    public class CardPicture : PictureBox
+    {
+        public CardPicture(int id) : base()
+        {
+            this.id = id;
+            Name = GetCard.ToString() + "_picture";
+            Size = new Size(40, 60);
+            Image = GetCard.GetImage;
+        }
+        public readonly int id;
+        public Card GetCard { get { return Game.FreeCards[id]; } }
     }
 }

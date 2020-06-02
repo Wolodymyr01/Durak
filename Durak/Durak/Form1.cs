@@ -19,7 +19,7 @@ namespace Durak
 
         private void PictureBox1_Click(object sender, EventArgs e)
         {
-
+            
         }
 
         private void MoveButton_Click(object sender, EventArgs e)
@@ -49,6 +49,23 @@ namespace Durak
             Game.players[Game.ActivePlayer].cards.AddRange(Card.playing);
             Card.playing.Clear();
             Game.NextPlayer();
+        }
+
+        private void OKButton_Click(object sender, EventArgs e)
+        {
+            Game.players = new Player[2] { new Player(Player1.Text), new Player(Player2.Text) };
+            Game.players[0].myTurn = true;
+            label2.Text = Game.players[0].Name;
+            label3.Text = Game.players[1].Name;
+            panel1.Dispose();
+            // draw deck
+            CardPicture[] pics = new CardPicture[10];
+            for (int i = 0; i < pics.Length; i++)
+            {
+                pics[i] = new CardPicture(i);
+                Controls.Add(pics[i]);
+                pics[i].Location = new Point(450 + 3 * i, 100 + 3 * i);
+            }
         }
     }
 }

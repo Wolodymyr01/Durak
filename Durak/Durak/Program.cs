@@ -37,7 +37,10 @@ namespace Durak
         public Card(Suit s, Face f)
         {
             suit = s; face = f;
-            GetImage = Image.FromFile(s.ToString() + f.ToString() + ".jpg");
+            string str = (((byte)f > 10)? char.ToUpper(f.ToString()[0]).ToString() : ((byte)f).ToString()) 
+                + char.ToUpper(s.ToString()[0]) + ".jpg";
+            if (str[1] == 'P') str = str.Remove(1, 1).Insert(1, "S");
+            GetImage = Image.FromFile(str);
         }
         public static Card[] Deck
         {
@@ -119,8 +122,12 @@ namespace Durak
     [Serializable]
     public class Player
     {
+        public Player(string name)
+        {
+            Name = name;
+        }
         public readonly List<Card> cards = new List<Card>();
-        public bool myTurn;
+        public bool myTurn = false;
         public Result statistics;
         public string Name { get; protected set; }
         public void PickCard()
