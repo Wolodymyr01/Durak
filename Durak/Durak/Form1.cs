@@ -42,6 +42,13 @@ namespace Durak
 
         private void PickUpButton_Click(object sender, EventArgs e)
         {
+            string s = null;
+            foreach (var item in Game.players[0].cards)
+            {
+                s += item.ToString() + "\n";
+            }
+            MessageBox.Show(s);
+            //
             foreach (var item in Card.playing)
             {
                 item.Restore();
@@ -53,7 +60,8 @@ namespace Durak
 
         private void OKButton_Click(object sender, EventArgs e)
         {
-            Game.players = new Player[2] { new Player(Player1.Text), new Player(Player2.Text) };
+            Game.players = new Player[2] { new Player(Player1.Text, new Point(55, 10)),
+                new Player(Player2.Text, new Point(10, 250)) };
             Game.players[0].myTurn = true;
             label2.Text = Game.players[0].Name;
             label3.Text = Game.players[1].Name;
@@ -71,7 +79,6 @@ namespace Durak
                 while (Game.players[i].cards.Count < 6)
                 {
                     Game.players[i].PickCard();
-                    MessageBox.Show(Game.players[i].cards.Count.ToString());
                 }
             }
         }

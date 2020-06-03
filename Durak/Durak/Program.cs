@@ -94,7 +94,7 @@ namespace Durak
             {
                 if (B.suit == Game.Trump)
                 {
-                    return A.suit > B.suit;
+                    return A.face > B.face;
                 }
                 return true;
             }
@@ -104,7 +104,9 @@ namespace Durak
                 {
                     return false;
                 }
-                return A.suit > B.suit;
+                if (A.suit > B.suit) return true;
+                else if (A.suit < B.suit) return false;
+                return A.face > B.face;
             }
         }
         public static bool operator <(Card A, Card B)
@@ -113,7 +115,7 @@ namespace Durak
             {
                 if (B.suit == Game.Trump)
                 {
-                    return A.suit < B.suit;
+                    return A.face < B.face;
                 }
                 return false;
             }
@@ -123,20 +125,25 @@ namespace Durak
                 {
                     return true;
                 }
-                return A.suit < B.suit;
+                if (A.suit < B.suit) return true;
+                else if (A.suit > B.suit) return false;
+                return A.face < B.face;
             }
         }
     }
     [Serializable]
     public class Player
     {
-        public Player(string name)
+        public Player(string name, Point Loc)
         {
             Name = name;
+            Loc.X -= 69;
+            loc = Loc;
         }
         public readonly List<Card> cards = new List<Card>();
         public bool myTurn = false;
         public Result statistics;
+        Point loc;
         public string Name { get; protected set; }
         public void PickCard()
         {
@@ -144,11 +151,22 @@ namespace Durak
             cards.Add(Game.FreeCards[n]);
             Game.FreeCards.RemoveAt(n);
             // graphical interaction
-            cards.Sort();
             int i = cards.Count - 1;
-            cards[i].picture.Location = (this == Game.players[0]) ? new Point(55 + i * 10, 10)
-                : new Point(10 + i * 10, 250);
+            loc.X += cards[0].picture.Width;
+            cards[i].picture.Location = loc;
             cards[i].picture.active = true;
+            cards.Sort();
+            for (int j = 1; j < cards.Count; j++)
+            {
+                for (int k = j; k < cards.Count; k++)
+                {
+                    if (cards[k - 1] < cards[k])
+                    {
+                        (cards[k - 1].picture.Location, cards[k].picture.Location) =
+                            (cards[k].picture.Location, cards[k - 1].picture.Location);
+                    }
+                }
+            }
         }
         public override string ToString()
         {
@@ -171,7 +189,6 @@ namespace Durak
         public static List<Card> FreeCards = Card.Deck.ToList();
         public static Player[] players;
         public static Suit Trump = (Suit)Randomizer.RandomNumber(0, 3);
-        public static Card[] Deck = Card.Deck;
         /// <summary>
         /// Shows whose turn is that now
         /// </summary>

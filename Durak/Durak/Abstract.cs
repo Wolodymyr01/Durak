@@ -34,7 +34,7 @@ namespace Durak
             Click += new EventHandler((o, a) =>
             {
                 MessageBox.Show(GetCard.ToString());
-                if (active) Dispose();
+                if (active) SendToBack();
             });
         }
         public readonly int id;
