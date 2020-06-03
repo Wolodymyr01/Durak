@@ -26,11 +26,19 @@ namespace Durak
         public CardPicture(int id) : base()
         {
             this.id = id;
+            GetCard = Game.FreeCards[id];
             Name = GetCard.ToString() + "_picture";
-            Size = new Size(40, 60);
+            Size = new Size(69, 105);
             Image = GetCard.GetImage;
+            GetCard.picture = this;
+            Click += new EventHandler((o, a) =>
+            {
+                MessageBox.Show(GetCard.ToString());
+                if (active) Dispose();
+            });
         }
         public readonly int id;
-        public Card GetCard { get { return Game.FreeCards[id]; } }
+        public bool active = false;
+        public Card GetCard;
     }
 }

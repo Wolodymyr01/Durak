@@ -59,12 +59,20 @@ namespace Durak
             label3.Text = Game.players[1].Name;
             panel1.Dispose();
             // draw deck
-            CardPicture[] pics = new CardPicture[10];
+            CardPicture[] pics = new CardPicture[36];
             for (int i = 0; i < pics.Length; i++)
             {
                 pics[i] = new CardPicture(i);
                 Controls.Add(pics[i]);
-                pics[i].Location = new Point(450 + 3 * i, 100 + 3 * i);
+                pics[i].Location = new Point(420 + 1 * i, 100 + 1 * i);
+            }
+            for (int i = 0; i < Game.players.Length; i++)
+            {
+                while (Game.players[i].cards.Count < 6)
+                {
+                    Game.players[i].PickCard();
+                    MessageBox.Show(Game.players[i].cards.Count.ToString());
+                }
             }
         }
     }

@@ -32,7 +32,7 @@ namespace Durak
     {
         six = 6, seven, eight, nine, ten, jack, queen, king, ace
     }
-    public class Card
+    public class Card : IComparable
     {
         public Card(Suit s, Face f)
         {
@@ -50,7 +50,7 @@ namespace Durak
                 int k = -1;
                 for (int i = 0; i < 4; i++)
                 {
-                    for (int j = 0; j < 9; j++)
+                    for (int j = 6; j < 15; j++)
                     {
                         cards[++k] = new Card((Suit)i, (Face)j);
                     }
@@ -61,6 +61,7 @@ namespace Durak
         public static List<Card> playing = new List<Card>();
         public readonly Suit suit;
         public readonly Face face;
+        public CardPicture picture;
         public Image GetImage { get; private set; }
         public bool IsBeaten { get; private set; } = false;
         public static void Beat(Card who, Card whom)
@@ -71,6 +72,13 @@ namespace Durak
         public void Restore()
         {
             IsBeaten = true;
+        }
+        public int CompareTo(object obj)
+        {
+            var acard = obj as Card;
+            if (this > acard) return 1;
+            else if (this == acard) return 0;
+            else return -1;
         }
         public override string ToString()
         {
@@ -136,6 +144,11 @@ namespace Durak
             cards.Add(Game.FreeCards[n]);
             Game.FreeCards.RemoveAt(n);
             // graphical interaction
+            cards.Sort();
+            int i = cards.Count - 1;
+            cards[i].picture.Location = (this == Game.players[0]) ? new Point(55 + i * 10, 10)
+                : new Point(10 + i * 10, 250);
+            cards[i].picture.active = true;
         }
         public override string ToString()
         {
@@ -158,6 +171,7 @@ namespace Durak
         public static List<Card> FreeCards = Card.Deck.ToList();
         public static Player[] players;
         public static Suit Trump = (Suit)Randomizer.RandomNumber(0, 3);
+        public static Card[] Deck = Card.Deck;
         /// <summary>
         /// Shows whose turn is that now
         /// </summary>
