@@ -76,7 +76,7 @@
             this.SuitPicture.Image = global::Durak.Properties.Resources.Diamonds;
             this.SuitPicture.Location = new System.Drawing.Point(732, 53);
             this.SuitPicture.Name = "SuitPicture";
-            this.SuitPicture.Size = new System.Drawing.Size(56, 50);
+            this.SuitPicture.Size = new System.Drawing.Size(50, 50);
             this.SuitPicture.TabIndex = 3;
             this.SuitPicture.TabStop = false;
             this.SuitPicture.Click += new System.EventHandler(this.PictureBox1_Click);
@@ -97,7 +97,7 @@
             this.panel1.Controls.Add(this.OKButton);
             this.panel1.Controls.Add(this.Player1);
             this.panel1.Controls.Add(this.Player2);
-            this.panel1.Location = new System.Drawing.Point(12, 3);
+            this.panel1.Location = new System.Drawing.Point(6, 3);
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(776, 435);
             this.panel1.TabIndex = 5;

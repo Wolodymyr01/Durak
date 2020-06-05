@@ -62,6 +62,8 @@ namespace Durak
         public readonly Suit suit;
         public readonly Face face;
         public CardPicture picture;
+        public Player player;
+        public int occ;
         public Image GetImage { get; private set; }
         public bool IsBeaten { get; private set; } = false;
         public static void Beat(Card who, Card whom)
@@ -71,14 +73,17 @@ namespace Durak
         }
         public void Restore()
         {
-            IsBeaten = true;
+            IsBeaten = false;
         }
         public int CompareTo(object obj)
         {
             var acard = obj as Card;
-            if (this > acard) return 1;
-            else if (this == acard) return 0;
-            else return -1;
+            int x = 0, y = 0;
+            if (suit == Game.Trump) x += 130; else x += 20 * ((int)suit + 1);
+            if (acard.suit == Game.Trump) y += 130; else y += 20 * ((int)acard.suit + 1);
+            x += (int)face;
+            y += (int)acard.face;
+            return x - y;
         }
         public override string ToString()
         {
@@ -88,26 +93,23 @@ namespace Durak
         {
             return suit.GetHashCode() - face.GetHashCode();
         }
+        public override bool Equals(object obj)
+        {
+            return suit.Equals((obj as Card).suit) && face.Equals((obj as Card).face);
+        }
+        public static bool operator ==(Card A, Card B)
+        {
+            return A.Equals(B);
+        }
+        public static bool operator !=(Card A, Card B)
+        {
+            return !A.Equals(B);
+        }
         public static bool operator >(Card A, Card B)
         {
-            if (A.suit == Game.Trump)
-            {
-                if (B.suit == Game.Trump)
-                {
-                    return A.face > B.face;
-                }
-                return true;
-            }
-            else
-            {
-                if (B.suit == Game.Trump)
-                {
-                    return false;
-                }
-                if (A.suit > B.suit) return true;
-                else if (A.suit < B.suit) return false;
-                return A.face > B.face;
-            }
+            if (A.suit == B.suit) return A.face > B.face;
+            if (A.suit == Game.Trump) return true;
+            return false;
         }
         public static bool operator <(Card A, Card B)
         {
@@ -132,7 +134,7 @@ namespace Durak
         }
     }
     [Serializable]
-    public class Player
+    public class Player : IComparable
     {
         public Player(string name, Point Loc)
         {
@@ -141,32 +143,40 @@ namespace Durak
             loc = Loc;
         }
         public readonly List<Card> cards = new List<Card>();
-        public bool myTurn = false;
-        public Result statistics;
-        Point loc;
+        public Result statistics = new Result();
+        internal Point loc;
+        internal List<int> occupied = new List<int>();
+        public bool attacking = false;
         public string Name { get; protected set; }
-        public void PickCard()
+        public int CompareTo(object obj)
         {
-            var n = Randomizer.RandomNumber(0, Game.FreeCards.Count);
-            cards.Add(Game.FreeCards[n]);
-            Game.FreeCards.RemoveAt(n);
+            return (int)(statistics.WinPercent - (obj as Player).statistics.WinPercent);
+        }
+        public void PickCard(Card card = null)
+        {
+            if (card is null)
+            {
+                var n = Randomizer.RandomNumber(0, Game.FreeCards.Count);
+                if (Game.FreeCards.Count > 0)
+                {
+                    (Game.FreeCards[n].picture.Location,
+                        Game.FreeCards[0].picture.Location) = (Game.FreeCards[0].picture.Location,
+                        Game.FreeCards[n].picture.Location);
+                    cards.Add(Game.FreeCards[n]);
+                    Game.FreeCards.RemoveAt(n);
+                }
+                else throw new ApplicationException("Must be handled");          
+            }
+            else cards.Add(card);
             // graphical interaction
             int i = cards.Count - 1;
-            loc.X += cards[0].picture.Width;
-            cards[i].picture.Location = loc;
-            cards[i].picture.active = true;
+            int x = loc.X;
+            while (occupied.Contains(x += cards[0].picture.Width)) ;
+            cards[i].picture.Location = new Point(x, loc.Y);
+            occupied.Add(x);
+            cards[i].occ = x;
+            cards[i].player = this;
             cards.Sort();
-            for (int j = 1; j < cards.Count; j++)
-            {
-                for (int k = j; k < cards.Count; k++)
-                {
-                    if (cards[k - 1] < cards[k])
-                    {
-                        (cards[k - 1].picture.Location, cards[k].picture.Location) =
-                            (cards[k].picture.Location, cards[k - 1].picture.Location);
-                    }
-                }
-            }
         }
         public override string ToString()
         {
@@ -193,15 +203,53 @@ namespace Durak
         /// Shows whose turn is that now
         /// </summary>
         public static int ActivePlayer { get; private set; } = 0;
-        public static void NextPlayer()
+        public static void NextPlayer(bool defend = false)
         {
+            foreach (var item in players[ActivePlayer].cards)
+            {
+                item.picture.Image = Image.FromFile("default.jpg");
+            }
+            players[ActivePlayer].attacking = !defend;
             if (++ActivePlayer >= players.Length) ActivePlayer = 0;
+            players[ActivePlayer].attacking = defend;
+            foreach (var item in players[ActivePlayer].cards)
+            {
+                item.picture.Image = item.picture.image;
+            }
+        }
+        public static object[] array;
+        public static void Init(params object[] args)
+        {
+            array = args;
         }
         public static void NewGame()
         {
             FreeCards = Card.Deck.ToList();
-            Trump = (Suit)Randomizer.RandomNumber(0, 3);
+            Durak.action(players[0], (TextBox)array[0], (TextBox)array[1], (Label)array[2], (Label)array[3], 
+                (Panel)array[4], (Control.ControlCollection)array[5], (PictureBox)array[6]);
             ActivePlayer = 0;
+        }
+        public static void Win(Player player)
+        {
+            player.statistics.wins++;
+            NextPlayer();
+            var loser = players[ActivePlayer];
+            loser.statistics.loses++;
+            foreach (var item in players) Statistics.heroes.Add(item);
+            Statistics.Save();
+            MessageBox.Show($"{player} wins! Congratulations! {loser}, be strong, try again!");
+            NewGame();
+        }
+        public static void Draw()
+        {
+            foreach (var item in players)
+            {
+                item.statistics.draws++;
+                Statistics.heroes.Add(item);
+            }
+            Statistics.Save();
+            MessageBox.Show($"Draw! Don't stop!");
+            NewGame();
         }
     }
     [Serializable]
