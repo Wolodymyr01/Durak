@@ -36,6 +36,12 @@ namespace Durak
             GetCard.picture = this;
             Click += new EventHandler((o, a) =>
             {
+                if (Game.players[Game.ActivePlayer].cards.Count == 0
+&& Game.FreeCards.Count == 0)
+                {
+                    Game.Win(Game.players[Game.ActivePlayer]);
+                    return;
+                }
                 if (GetCard.player == Game.players[Game.ActivePlayer]) // my turn
                 {
                     if (Card.playing.Count == 0)

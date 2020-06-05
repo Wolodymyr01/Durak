@@ -52,6 +52,7 @@ namespace Durak
                             Game.NextPlayer();
                             if (Game.players[Game.ActivePlayer].cards.Count == 0) Game.Draw();
                             else Game.Win(player);
+                            return;
                         }
                         else
                         {
@@ -67,41 +68,51 @@ namespace Durak
 
         private void PickUpButton_Click(object sender, EventArgs e)
         {
-            foreach (var item in Card.playing)
+            if (Card.playing.Count > 0)
             {
-                item.Restore();
-                try
+                foreach (var item in Card.playing)
                 {
-                    Game.players[Game.ActivePlayer].PickCard(item);
-                }
-                catch (ApplicationException)
-                {
-                    foreach (var player in Game.players)
-                    {
-                        if (player.cards.Count == 0)
-                        {
-                            Game.Win(player);
-                            return;
-                        }
-                    }
-                }
-            }
-            Card.playing.Clear();
-            for (int i = 0; i < Game.players.Length; i++)
-            {
-                while (Game.players[i].cards.Count < 6)
-                {
+                    item.Restore();
                     try
                     {
-                        Game.players[i].PickCard();
+                        Game.players[Game.ActivePlayer].PickCard(item);
                     }
                     catch (ApplicationException)
                     {
-                        break;
+                        foreach (var player in Game.players)
+                        {
+                            if (player.cards.Count == 0)
+                            {
+                                Game.Win(player);
+                                return;
+                            }
+                        }
                     }
                 }
+                Card.playing.Clear();
+                for (int i = 0; i < Game.players.Length; i++)
+                {
+                    while (Game.players[i].cards.Count < 6)
+                    {
+                        try
+                        {
+                            Game.players[i].PickCard();
+                        }
+                        catch (ApplicationException)
+                        {
+                            foreach (var player in Game.players)
+                            {
+                                if (player.cards.Count == 0)
+                                {
+                                    Game.Win(player);
+                                }
+                                return;
+                            }
+                        }
+                    }
+                }
+                Game.NextPlayer();
             }
-            Game.NextPlayer();
         }
         public static Action<object, TextBox, TextBox, Label, Label, Panel, Control.ControlCollection, PictureBox>
             action = Action;

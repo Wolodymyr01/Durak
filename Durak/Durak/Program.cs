@@ -16,9 +16,9 @@ namespace Durak
         [STAThread]
         static void Main()
         {
-            Statistics.heroes = (File.Exists("Statistics.xml")) ? new XmlSerializer(typeof(SortedSet<Player>))
-                .Deserialize(new FileStream("Statistics.xml", FileMode.Open)) as SortedSet<Player> 
-                : new SortedSet<Player>();
+            Statistics.heroes = (File.Exists("Statistics.xml")) ? new XmlSerializer(typeof(List<Player>))
+                .Deserialize(new FileStream("Statistics.xml", FileMode.Open)) as List<Player> 
+                : new List<Player>();
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Durak());
@@ -34,6 +34,10 @@ namespace Durak
     }
     public class Card : IComparable
     {
+        public Card()
+        {
+
+        }
         public Card(Suit s, Face f)
         {
             suit = s; face = f;
@@ -136,6 +140,10 @@ namespace Durak
     [Serializable]
     public class Player : IComparable
     {
+        public Player()
+        {
+
+        }
         public Player(string name, Point Loc)
         {
             Name = name;
@@ -236,7 +244,7 @@ namespace Durak
             var loser = players[ActivePlayer];
             loser.statistics.loses++;
             foreach (var item in players) Statistics.heroes.Add(item);
-            Statistics.Save();
+            //Statistics.Save();
             MessageBox.Show($"{player} wins! Congratulations! {loser}, be strong, try again!");
             NewGame();
         }
@@ -247,7 +255,7 @@ namespace Durak
                 item.statistics.draws++;
                 Statistics.heroes.Add(item);
             }
-            Statistics.Save();
+            //Statistics.Save();
             MessageBox.Show($"Draw! Don't stop!");
             NewGame();
         }
@@ -273,10 +281,10 @@ namespace Durak
     }
     public static class Statistics
     {
-        public static SortedSet<Player> heroes; // check if the file exists, if not create a new list 
+        public static List<Player> heroes; // check if the file exists, if not create a new list 
         public static void Save()
         {
-            XmlSerializer serializer = new XmlSerializer(typeof(SortedSet<Player>));
+            XmlSerializer serializer = new XmlSerializer(typeof(List<Player>));
             FileStream fs = new FileStream("Statistics.xml", FileMode.OpenOrCreate);
             serializer.Serialize(fs, heroes);
             fs.Close();
